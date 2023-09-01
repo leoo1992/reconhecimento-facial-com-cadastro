@@ -1,5 +1,25 @@
 const cam = document.getElementById('cam');
 const cadastroBtn = document.getElementById('cadastroBtn');
+const labels = [];
+
+async function carregarNomes() {
+    try {
+        const response = await fetch('http://localhost:3000/obter-nomes');
+        
+        if (response.ok) {
+            const nomes = await response.json();
+            labels.push(...nomes);
+            console.log('Nomes carregados:', labels);
+
+        } else {
+            console.error('Erro ao carregar nomes:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+    }
+}
+
+window.addEventListener('load', carregarNomes);
 
 const startVideo = () => {
     navigator.mediaDevices.enumerateDevices()
@@ -7,7 +27,7 @@ const startVideo = () => {
         if (Array.isArray(devices)) {
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
             if (videoDevices.length > 0) {
-                const selectedDevice = videoDevices[0]; // Seleciona a primeira câmera disponível
+                const selectedDevice = videoDevices[0];
                 navigator.getUserMedia(
                     { video: {
                         deviceId: selectedDevice.deviceId
@@ -28,9 +48,7 @@ const startVideo = () => {
     });
 };
 
-
 const loadLabels = () => {
-    const labels = ['Leonardo']
     return Promise.all(labels.map(async label => {
         const descriptions = []
         for (let i = 1; i <= 1; i++) {
@@ -49,8 +67,6 @@ Promise.all([
     faceapi.nets.tinyFaceDetector.loadFromUri('/assets/lib/face-api/models'),
     faceapi.nets.faceLandmark68Net.loadFromUri('/assets/lib/face-api/models'),
     faceapi.nets.faceRecognitionNet.loadFromUri('/assets/lib/face-api/models'),
-    faceapi.nets.faceExpressionNet.loadFromUri('/assets/lib/face-api/models'),
-    faceapi.nets.ageGenderNet.loadFromUri('/assets/lib/face-api/models'),
     faceapi.nets.ssdMobilenetv1.loadFromUri('/assets/lib/face-api/models'),
 ]).then(startVideo)
 
@@ -70,8 +86,6 @@ cam.addEventListener('play', async () => {
                 new faceapi.TinyFaceDetectorOptions()
             )
             .withFaceLandmarks()
-            .withFaceExpressions()
-            .withAgeAndGender()
             .withFaceDescriptors()
         const resizedDetections = faceapi.resizeResults(detections, canvasSize)
         const faceMatcher = new faceapi.FaceMatcher(labels, 0.6)
@@ -80,24 +94,16 @@ cam.addEventListener('play', async () => {
         )
         canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
         faceapi.draw.drawDetections(canvas, resizedDetections)
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-        faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
-        resizedDetections.forEach(detection => {
-            const { age, gender, genderProbability } = detection
-            new faceapi.draw.DrawTextField([
-                `${parseInt(age, 10)} years`,
-                `${gender} (${parseInt(genderProbability * 100, 10)})`
-            ], detection.detection.box.topRight).draw(canvas)
-        })
         results.forEach((result, index) => {
             const box = resizedDetections[index].detection.box
-            const { label, distance } = result
+            const { label } = result
             new faceapi.draw.DrawTextField([
-                `${label} (${parseInt(distance * 100, 10)})`
-            ], box.bottomRight).draw(canvas)
+                `${label}`
+            ], box.topLeft).draw(canvas)
         })
     }, 100)
 })
+
 cadastroBtn.addEventListener('click', async () => {
     const nome = document.getElementById('nomeInput').value;
 
@@ -127,7 +133,7 @@ cadastroBtn.addEventListener('click', async () => {
             if (response.ok) {
                 alert('Foto salva com sucesso.');
                 setTimeout(() => {
-                    location.reload(); // Recarrega a página após 3 segundos
+                    location.reload();
                 }, 3000);
             } else {
                 alert('Erro ao salvar a imagem.');
