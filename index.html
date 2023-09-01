@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Reconhecimento Facial</title>
+    <link rel="stylesheet" href="./assets/css/index.css">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="container mt-4">
+            <div class="row centered-row">
+                <input id="nomeInput" type="text" class="form-control" placeholder="Nome">
+                <button id="cadastroBtn" class="btn btn-primary btn-block">Cadastrar</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <video autoplay id="cam" width="720" height="560" muted></video>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./assets/lib/face-api/face-api.min.js"></script>
+    <script src="./assets/js/index.js"></script>
+</body>
+
+</html>
