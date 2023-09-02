@@ -7,16 +7,27 @@ const port = 3000;
 const filePath = path.join(__dirname, 'RostosConhecidos.txt');
 const labels = [];
 const { exec } = require('child_process');
+const bodyParser = require('body-parser');
 app.use(cors());
+app.use(express.static('public'));
+app.use(bodyParser.raw({ type: 'image/jpeg', limit: '10mb' }));
+
+app.get('/server-ready', (req, res) => {
+    res.status(200).send('Servidor pronto para recarregar.');
+});
 
 app.get('/obter-nomes', (req, res) => {
     res.json(labels);
 });
 
-app.use(express.static('public'));
+const http = require('http');
+const server = http.createServer(app);
 
-const bodyParser = require('body-parser');
-app.use(bodyParser.raw({ type: 'image/jpeg', limit: '10mb' }));
+server.listen(port, () => {
+    console.log('Servidor rodando na porta', port);
+});
+
+let serverReady = true; // Inicialmente, o servidor está pronto
 
 app.post('/salvar-imagem', (req, res) => {
     const nome = req.headers.nome;
@@ -39,17 +50,23 @@ app.post('/salvar-imagem', (req, res) => {
 
     res.status(200).send('Imagem e nome salvos com sucesso.');
 
+    if (serverReady) {
+        console.log('Reiniciando o servidor...');
+        serverReady = false; // Impede que mais cadastros acionem reinicialização
+        restartServer(); // Função para reiniciar o servidor
+    }
+});
+
+function restartServer() {
     exec('npm start', (error, stdout, stderr) => {
         if (error) {
             console.error('Erro ao reiniciar o servidor:', error);
+        } else {
+            console.log('Servidor reiniciado com sucesso.');
+            serverReady = true; // Marca o servidor como pronto após a reinicialização
         }
     });
-});
-
-app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
-});
-
+}
 
 fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {

@@ -101,24 +101,20 @@ cam.addEventListener('play', async () => {
                 `${label}`
             ], box.topLeft).draw(canvas)
         })
-    }, 100)
+    }, 3000)
 })
 
 cadastroBtn.addEventListener('click', async () => {
     const nome = document.getElementById('nomeInput').value;
-
     if (!nome) {
         alert('Digite um nome antes de cadastrar.');
         return;
     }
-
     const canvas = document.createElement('canvas');
     canvas.width = cam.videoWidth;
     canvas.height = cam.videoHeight;
-
     const context = canvas.getContext('2d');
     context.drawImage(cam, 0, 0, canvas.width, canvas.height);
-
     canvas.toBlob(async blob => {
         try {
             const response = await fetch('http://localhost:3000/salvar-imagem', {
@@ -129,12 +125,14 @@ cadastroBtn.addEventListener('click', async () => {
                 },
                 body: blob
             });
-
             if (response.ok) {
-                alert('Foto salva com sucesso.');
-                setTimeout(() => {
+                const serverReadyResponse = await fetch('http://localhost:3000/server-ready');
+                if (serverReadyResponse.ok) {
+                    alert('Foto salva com sucesso.');
                     location.reload();
-                }, 3000);
+                } else {
+                    alert('Erro ao verificar o servidor.');
+                }
             } else {
                 alert('Erro ao salvar a imagem.');
             }
@@ -144,6 +142,7 @@ cadastroBtn.addEventListener('click', async () => {
         }
     }, 'image/jpeg');
 });
+
 
 
 
