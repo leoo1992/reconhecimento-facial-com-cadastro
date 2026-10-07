@@ -9,8 +9,10 @@
     "dev": "concurrently \"npm start\" \"npm run wait-for-server\" ",
     "wait-for-server": "sleep 5 && curl http://localhost:3000/server-ready || npm run wait-for-server"
   },
-  
   "devDependencies": {
     "concurrently": "^8.2.1"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
